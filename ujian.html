@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ujian Online Kelas 5 Semester 1</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f6f9;
+      margin: 0;
+      padding: 0;
+    }
+    header {
+      background: #2d6cdf;
+      color: white;
+      text-align: center;
+      padding: 15px;
+      font-size: 22px;
+      font-weight: bold;
+    }
+    #timer {
+      background: #ff5252;
+      color: white;
+      text-align: center;
+      font-size: 20px;
+      font-weight: bold;
+      padding: 10px;
+    }
+    main {
+      max-width: 800px;
+      margin: 20px auto;
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+    h2 {
+      font-size: 18px;
+      margin-bottom: 10px;
+    }
+    .soal {
+      margin-bottom: 20px;
+      padding: 15px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+    }
+    label {
+      display: block;
+      margin: 5px 0;
+      cursor: pointer;
+    }
+    button {
+      background: #2d6cdf;
+      color: white;
+      border: none;
+      padding: 12px 20px;
+      border-radius: 8px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #244fb1;
+    }
+    #hasil {
+      margin-top: 20px;
+      font-size: 18px;
+      font-weight: bold;
+      padding: 15px;
+      border-radius: 8px;
+      display: none;
+    }
+    .benar { color: green; }
+    .salah { color: red; }
+  </style>
+</head>
+<body>
+  <header>Ujian Online Kelas 5 Semester 1</header>
+  <div id="timer">Sisa Waktu: 15:00</div>
+  
+  <main>
+    <form id="ujianForm"></form>
+    <div id="hasil"></div>
+  </main>
+
+  <!-- Suara -->
+  <audio id="audioBenar" src="https://www.soundjay.com/button/beep-07.wav"></audio>
+  <audio id="audioSalah" src="https://www.soundjay.com/button/beep-10.wav"></audio>
+
+  <script>
+    const soalList = [
+      {t:"Hewan yang berkembang biak dengan cara bertelur disebut?", o:["Vivipar","Ovipar","Ovovivipar","Herbivora"], k:"Ovipar"},
+      {t:"Sungai terbesar di Pulau Jawa adalah?", o:["Sungai Musi","Sungai Kapuas","Sungai Brantas","Sungai Mahakam"], k:"Sungai Brantas"},
+      {t:"3.600 : 90 = ?", o:["30","40","45","50"], k:"40"},
+      {t:"Tokoh proklamator kemerdekaan Indonesia adalah?", o:["Soekarno dan Hatta","Soekarno dan Sudirman","Hatta dan Soeharto","Diponegoro dan Hatta"], k:"Soekarno dan Hatta"},
+      {t:"Antonim dari kata 'tinggi' adalah?", o:["Panjang","Rendah","Besar","Lebar"], k:"Rendah"},
+      {t:"Perkembangbiakan vegetatif pada tumbuhan contohnya adalah?", o:["Padi dari biji","Kentang dari umbi","Kacang tanah dari biji","Jagung dari biji"], k:"Kentang dari umbi"},
+      {t:"7.200 : 80 = ?", o:["80","85","90","95"], k:"90"},
+      {t:"Pahlawan yang dikenal sebagai 'Bapak Pendidikan Nasional' adalah?", o:["Ki Hajar Dewantara","RA Kartini","Cut Nyak Dien","Jenderal Sudirman"], k:"Ki Hajar Dewantara"},
+      {t:"Kalimat yang menggunakan tanda baca dengan benar adalah?", o:["Apa kabar kamu.","Saya suka membaca buku, dan bermain bola.","Kapan kamu pergi?","Rumah saya besar!"], k:"Kapan kamu pergi?"},
+      {t:"Alat musik tradisional dari Jawa Barat yang dimainkan dengan cara digoyangkan adalah?", o:["Angklung","Gamelan","Sasando","Tifa"], k:"Angklung"},
+      {t:"Sila pertama Pancasila berbunyi?", o:["Kemanusiaan yang adil dan beradab","Ketuhanan Yang Maha Esa","Persatuan Indonesia","Keadilan sosial"], k:"Ketuhanan Yang Maha Esa"},
+      {t:"Ibukota Provinsi Jawa Tengah adalah?", o:["Semarang","Surabaya","Solo","Yogyakarta"], k:"Semarang"},
+      {t:"Hasil dari 125 × 8 adalah?", o:["1000","875","850","950"], k:"1000"},
+      {t:"RA Kartini dikenal sebagai pahlawan dalam bidang?", o:["Pendidikan","Kesehatan","Kesetaraan wanita","Olahraga"], k:"Kesetaraan wanita"},
+      {t:"Gambar bangun datar dengan 4 sisi sama panjang dan 4 sudut siku-siku adalah?", o:["Persegi","Persegi Panjang","Jajar Genjang","Belah Ketupat"], k:"Persegi"}
+    ];
+
+    // Acak soal
+    function shuffle(array) {
+      for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+      }
+      return array;
+    }
+
+    // Render soal
+    const ujianForm = document.getElementById("ujianForm");
+    shuffle(soalList).forEach((s, i) => {
+      let div = document.createElement("div");
+      div.classList.add("soal");
+      let html = `<h2>${i+1}. ${s.t}</h2>`;
+      s.o.forEach(opt => {
+        html += `<label><input type="radio" name="soal${i}" value="${opt}"> ${opt}</label>`;
+      });
+      div.innerHTML = html;
+      ujianForm.appendChild(div);
+
+      // Event langsung cek jawaban
+      div.querySelectorAll("input").forEach(input => {
+        input.addEventListener("change", () => {
+          if (input.value === s.k) {
+            document.getElementById("audioBenar").play();
+          } else {
+            document.getElementById("audioSalah").play();
+          }
+        });
+      });
+    });
+    ujianForm.innerHTML += `<button type="submit">Kirim Jawaban</button>`;
+
+    const hasilDiv = document.getElementById("hasil");
+
+    function periksaJawaban() {
+      let skor = 0;
+      soalList.forEach((s, i) => {
+        let jawaban = document.querySelector(`input[name="soal${i}"]:checked`);
+        if (jawaban && jawaban.value === s.k) {
+          skor++;
+        }
+      });
+      hasilDiv.style.display = "block";
+      hasilDiv.innerHTML = `Skor Anda: <span class="${skor === soalList.length ? 'benar' : 'salah'}">${skor} / ${soalList.length}</span>`;
+      let inputs = ujianForm.querySelectorAll("input");
+      inputs.forEach(inp => inp.disabled = true);
+      ujianForm.querySelector("button").disabled = true;
+    }
+
+    ujianForm.addEventListener("submit", function(e) {
+      e.preventDefault();
+      periksaJawaban();
+    });
+
+    // Timer 15 menit = 900 detik
+    let waktu = 900;
+    const timerDiv = document.getElementById("timer");
+    let countdown = setInterval(function() {
+      let menit = Math.floor(waktu / 60);
+      let detik = waktu % 60;
+      if (detik < 10) detik = "0" + detik;
+      timerDiv.textContent = `Sisa Waktu: ${menit}:${detik}`;
+      if (waktu <= 0) {
+        clearInterval(countdown);
+        timerDiv.textContent = "Waktu Habis ⏰";
+        periksaJawaban();
+      }
+      waktu--;
+    }, 1000);
+  </script>
+</body>
+</html>
